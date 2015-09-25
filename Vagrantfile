@@ -4,7 +4,7 @@
 # Vagrantfile API/syntax version. Don't touch unless you know what you're doing!
 VAGRANTFILE_API_VERSION = "2"
 
-$instances = (ENV['INSTANCES'] || 3).to_i
+$instances = (ENV['INSTANCES'] || 5).to_i
 
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
@@ -39,6 +39,9 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       # the Puppet Consul module doesn't register members
       # https://github.com/solarkennedy/puppet-consul/issues/31
       instance.vm.provision "shell", inline: "consul join master-1" unless type == 'master'
+
+      instance.vm.network "forwarded_port", guest: 8500, host: 8501 if type == 'master'
+
       instance.vm.provision :serverspec do |spec|
         spec.pattern = "./spec/#{type}/*_spec.rb"
       end if ENV['TESTING']
